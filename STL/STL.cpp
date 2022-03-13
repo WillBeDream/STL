@@ -1,11 +1,49 @@
 // STL.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+
+
 #include <iostream>
+#include <array>
+#include <vector>
+
+using std::cin;
+using std::cout;
+using std::endl;
+
+#define tab "\t"
+//#define STL_ARRAY
+#define STL_VECTOR
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    setlocale(LC_ALL, "");
+#ifdef STL_ARRAY
+    std::array<int,5> arr = {3,5,8,13,21};
+    for (size_t i = 0; i < arr.size(); i++)
+    {
+        cout << arr[i] << tab;
+    }
+    cout << endl;
+#endif // STL_ARRAY
+
+#ifdef STL_VECTOR
+    std::vector<int> vec = { 0,1,1,2,3,5,8,13,21,34 };
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        cout << vec[i]<< tab;
+    }
+    cout << endl;
+    cout << vec.size()<<endl;
+    cout << vec.max_size()<<endl;
+    cout << vec.capacity() << endl;
+    vec.push_back(55);
+    cout << vec.size() << endl;
+    cout << vec.max_size() << endl;
+    cout << vec.capacity() << endl;
+
+#endif // STL_VECTOR
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
