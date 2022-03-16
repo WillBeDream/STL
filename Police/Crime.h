@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <map>
+#include<fstream>
 
 const std::map<size_t, std::string> crimes =
 {
@@ -32,4 +33,9 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const Crime& obj);
+
+
+std::ofstream& operator<<(std::ofstream& ofs, const Crime& obj);
+
+
 
