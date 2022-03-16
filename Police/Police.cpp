@@ -1,6 +1,6 @@
 // Police.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -9,6 +9,7 @@
 #include <string>
 #include <Windows.h>
 #include "Crime.h"
+#include <algorithm>
 
 using std::cin;
 using std::cout;
@@ -20,6 +21,8 @@ using std::endl;
 
 void add(std::map<std::string, std::list<Crime>>& base);
 void print(const std::map<std::string, std::list<Crime>>& base);
+void print(const std::map<std::string, std::list<Crime>>& base, const std::string& first_plate, const std::string& last_plate);
+void print(const std::map<std::string, std::list<Crime>>& base, const std::string& licence_plate);
 void save(const std::map<std::string, std::list<Crime>>& base, const std::string& filename);
 void load(std::map<std::string, std::list<Crime>>& base, const std::string& filename);
 
@@ -35,8 +38,17 @@ int main()
 		{"a557аb", {Crime(5,"”лица космонавтов")}},
 		{"a001a", {Crime(4,"ѕерекресток Ћенина и ќкт€брьской"), Crime(3,"ул ќкт€брьска€")}}
 	}*/;
+
+	load(base, "base.txt");
+	load(base, "base.txt");
 	load(base, "base.txt");
 	print(base);
+
+	std::string licence_plate1;
+	cin >> licence_plate1;
+	std::string licence_plate2;
+	cin >> licence_plate2;
+	print(base, licence_plate1, licence_plate2);
 	//save(base, "base.txt");
 	/*add(base);*/
 	/*print(base);*/
@@ -93,6 +105,44 @@ void print(const std::map<std::string, std::list<Crime>>& base)
 	}
 }
 
+void print(const std::map<std::string, std::list<Crime>>& base, const std::string& first_plate, const std::string& last_plate)
+{
+	try
+	{
+		
+		for (std::map<std::string, std::list<Crime>>::const_iterator it = base.lower_bound(first_plate);
+			it != base.upper_bound(last_plate); ++it)
+		{
+			cout << it->first + ":\n";
+			for (std::list<Crime>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+			{
+				cout << *jt << endl;
+			}
+			cout << "\n------------------------------------------------------------------------\n";
+		}
+	}
+	catch (const std::exception & e)
+	{
+		std::cerr << e.what()<<endl;
+	}
+}
+
+void print(const std::map<std::string, std::list<Crime>>& base, const std::string& licence_plate)
+{
+	try
+	{
+		cout << licence_plate << ":\n";
+		for (std::list<Crime>::const_iterator it = base.at(licence_plate).begin();
+			it != base.at(licence_plate).end();
+			++it)
+			cout << *it << endl;
+	}
+	catch (...)
+	{
+		std::cerr << "¬ базе нет такого номера" << endl;
+	}
+}
+
 void save(const std::map<std::string, std::list<Crime>>& base, const std::string& filename)
 {
 	std::ofstream fout(filename);
@@ -126,26 +176,45 @@ void load(std::map<std::string, std::list<Crime>>& base, const std::string& file
 			std::getline(fin, licence_plate, ':');
 			std::getline(fin, crimes);
 			if (crimes.empty())continue;
-			if (crimes.find(',') != std::string::npos)
-			{
-				for (int start = 0, end = crimes.find(','); end != std::string::npos; start = end)
-				{
-					end = crimes.find(',', start + 1);
-					place = crimes.substr(start + 1, end);
-					place.erase(0, place.find_first_not_of(' '));
-					id = std::stoi(place.substr(0, place.find_first_of(' ')));
-					place.erase(0, place.find_first_of(' ') + 1);
-					base[licence_plate].push_back(Crime(id, place));
-				}
 
-			}
-			else
+			char* sz_crimes = new char[crimes.size() + 1]{};
+			std::strcpy(sz_crimes, crimes.c_str());
+			char sz_delimeters[] = ",;";
+
+			for (char* pch = strtok(sz_crimes, sz_delimeters); pch; pch = strtok(NULL, sz_delimeters))
 			{
-				id = std::stoi(crimes.substr(0, crimes.find_first_of(' ')));
-				crimes.erase(0, crimes.find_first_of(' '));
-				base[licence_plate].push_back(Crime(id, crimes));
+				while (*pch == ' ')pch++;
+				id = std::atoi(pch);
+				pch = std::strchr(pch, ' ')+1;
+				if(
+					std::find(base[licence_plate].begin(), base[licence_plate].end(), Crime(id, pch))
+					==base[licence_plate].end()
+					)
+					base[licence_plate].push_back(Crime(id, pch));
 			}
+
+			delete[]sz_crimes;
+				/*if (crimes.find(',') != std::string::npos)
+				{
+					for (int start = 0, end = crimes.find(','); end != std::string::npos; start = end)
+					{
+						end = crimes.find(',', start + 1);
+						place = crimes.substr(start + 1, end);
+						place.erase(0, place.find_first_not_of(' '));
+						id = std::stoi(place.substr(0, place.find_first_of(' ')));
+						place.erase(0, place.find_first_of(' ') + 1);
+						base[licence_plate].push_back(Crime(id, place));
+					}
+
+				}
+				else
+				{
+					id = std::stoi(crimes.substr(0, crimes.find_first_of(' ')));
+					crimes.erase(0, crimes.find_first_of(' '));
+					base[licence_plate].push_back(Crime(id, crimes));
+				}*/
 		}
+	
 		fin.close();
 	}
 	else
